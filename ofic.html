@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <title>Business Klawounds</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: url('tokio.png') no-repeat center center/cover;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            transition: background 0.5s ease-in-out;
+        }
+
+        /* Затемняющий экран */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            transition: background 0.5s ease-in-out;
+            z-index: 5;
+        }
+
+        .darkened {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        /* Хедер */
+        .header {
+            margin-top: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            z-index: 10;
+        }
+
+        /* Основной контейнер */
+        .container {
+            flex: 1;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            margin-top: 1cm;
+            z-index: 10;
+        }
+
+        /* Карта Visa */
+        .card {
+            width: 90%;
+            max-width: 320px;
+            height: 4.5cm;
+            background: linear-gradient(135deg, #0044cc, #002288);
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: white;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+            position: relative;
+            transition: transform 0.2s ease-in-out;
+            z-index: 10;
+            margin-top: 1cm; /* Опускаем карту вниз на 1 см */
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+        }
+
+        .card-number {
+            font-size: 20px;
+            letter-spacing: 2px;
+            margin: 10px 0;
+        }
+
+        .balance {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .visa-logo {
+            width: 50px;
+            align-self: flex-end;
+        }
+
+        /* Разделы */
+        .section {
+            display: none;
+            width: 100%;
+            height: 60%;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .active {
+            display: block;
+        }
+
+        /* Футер */
+        .footer-bar {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 1cm;
+            background: rgba(128, 128, 128, 0.5);
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 10;
+        }
+
+        /* Кнопки футера */
+        .footer-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            z-index: 10;
+        }
+
+        .footer-button img {
+            width: 30px;
+            height: 30px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Затемняющий экран -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Хедер -->
+    <div class="header">Business KL</div>
+
+    <!-- Основной контент -->
+    <div class="container">
+        <!-- Карта Visa (только для главного экрана) -->
+        <div class="card" id="home-card">
+            <div class="card-header">
+                <span>VISA PLATINUM</span>
+                <span>••• 3456</span>
+            </div>
+            <div class="card-number">**** **** **** 1234</div>
+            <div class="balance" id="balance">Баланс: $10,000</div>
+            <img src="visa_logo.png" alt="Visa" class="visa-logo">
+        </div>
+
+        <!-- Разделы -->
+        <div class="section active" id="home-section">🏠 Добро пожаловать в **Дом**!</div>
+        <div class="section" id="office-section">🏢 Вы в **Офисе**!</div>
+        <div class="section" id="invest-section">📈 Добро пожаловать в **Инвестиции**!</div>
+    </div>
+
+    <!-- Футер -->
+    <div class="footer-bar">
+        <button class="footer-button" id="office-button"><img src="1.png" alt="Офис"></button>
+        <button class="footer-button" id="home-button"><img src="2.png" alt="Дом"></button>
+        <button class="footer-button" id="invest-button"><img src="3.png" alt="Инвестиции"></button>
+    </div>
+
+    <script>
+        let balance = 10000;
+
+        function updateBalance(amount) {
+            balance += amount;
+            document.getElementById("balance").innerText = "Баланс: $" + balance.toLocaleString();
+        }
+
+        function darkenScreen(callback) {
+            const overlay = document.getElementById("overlay");
+            overlay.classList.add("darkened");
+
+            setTimeout(() => {
+                overlay.classList.remove("darkened");
+                callback();
+            }, 500);
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll(".section").forEach(sec => sec.classList.remove("active"));
+            document.getElementById(sectionId).classList.add("active");
+
+            // Показываем карту только в главном меню
+            document.getElementById("home-card").style.display = sectionId === "home-section" ? "block" : "none";
+
+            // Меняем фон в зависимости от раздела
+            if (sectionId === "invest-section") {
+                document.body.style.background = "url('tokio_morning.png') no-repeat center center/cover";
+            } else if (sectionId === "office-section") {
+                document.body.style.background = "url('tokio_night.png') no-repeat center center/cover";
+            } else {
+                document.body.style.background = "url('tokio.png') no-repeat center center/cover";
+            }
+        }
+
+        document.getElementById("office-button").addEventListener("click", function() {
+            darkenScreen(() => {
+                showSection("office-section");
+                updateBalance(-500);
+            });
+        });
+
+        document.getElementById("home-button").addEventListener("click", function() {
+            darkenScreen(() => {
+                showSection("home-section");
+            });
+        });
+
+        document.getElementById("invest-button").addEventListener("click", function() {
+            darkenScreen(() => {
+                showSection("invest-section");
+                updateBalance(2000);
+            });
+        });
+
+    </script>
+</body>
+</html>
